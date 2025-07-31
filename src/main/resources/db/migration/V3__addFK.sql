@@ -1,0 +1,1 @@
+---aLTER TABLE event ADD CONSTRAINT fk_event_organizer FOREIGN KEY (organizer_id) REFERENCES organizer(id);
