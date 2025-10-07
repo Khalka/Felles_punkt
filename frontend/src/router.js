@@ -1,36 +1,42 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from './composables/useAuth'
+"use client"
 
-import LoginPage from './components/LoginPage.vue'
-import RegisterView from './components/RegisterView.vue'
-import AdminView from './components/AdminView.vue'
-import ArrangorView from './components/ArrangorView.vue'
-import DeltakerView from './components/DeltakerView.vue'
-import MyActivities from './components/MyActivities.vue'
+import { createRouter, createWebHistory } from "vue-router"
+import { useAuth } from "./composables/useAuth"
+
+import LoginPage from "./components/LoginPage.vue"
+import RegisterView from "./components/RegisterView.vue"
+import AdminView from "./components/AdminView.vue"
+import ArrangorView from "./components/ArrangorView.vue"
+import DeltakerView from "./components/DeltakerView.vue"
+import MyActivities from "./components/MyActivities.vue"
+import ForgotPasswordPage from "./components/ForgotPasswordPage.vue"
+import ResetPasswordPage from "./components/ResetPasswordPage.vue"
 
 const routes = [
-  { path: '/', component: LoginPage },
-  { path: '/login', component: LoginPage },
-  { path: '/register', component: RegisterView },
+  { path: "/", component: LoginPage },
+  { path: "/login", component: LoginPage },
+  { path: "/register", component: RegisterView },
+  { path: "/forgot-password", component: ForgotPasswordPage },
+  { path: "/reset-password", component: ResetPasswordPage },
   {
-    path: '/admin',
+    path: "/admin",
     component: AdminView,
-    meta: { requiresAuth: true, roles: ['admin'] },
+    meta: { requiresAuth: true, roles: ["admin"] },
   },
   {
-    path: '/arrangor',
+    path: "/arrangor",
     component: ArrangorView,
-    meta: { requiresAuth: true, roles: ['arrangor'] },
+    meta: { requiresAuth: true, roles: ["arrangor"] },
   },
   {
-    path: '/deltaker',
+    path: "/deltaker",
     component: DeltakerView,
-    meta: { requiresAuth: true, roles: ['deltaker'] },
+    meta: { requiresAuth: true, roles: ["deltaker"] },
   },
   {
-    path: '/mine-aktiviteter',
+    path: "/mine-aktiviteter",
     component: MyActivities,
-    meta: { requiresAuth: true, roles: ['arrangor', 'deltaker'] },
+    meta: { requiresAuth: true, roles: ["arrangor", "deltaker"] },
   },
 ]
 
@@ -47,11 +53,11 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     if (!userRole) {
       // Ikke logget inn - send til login
-      next('/login')
+      next("/login")
     } else if (to.meta.roles && !to.meta.roles.includes(userRole)) {
       // Rolle ikke tillatt - kan sende til "ikke-tilgang"-side eller login
-      alert('Du har ikke tilgang til denne siden.')
-      next('/login')
+      alert("Du har ikke tilgang til denne siden.")
+      next("/login")
     } else {
       // Tilgang OK
       next()

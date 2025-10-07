@@ -1,3 +1,7 @@
+
+SET search_path TO public;
+
+
 -- 1. Postadresse
 CREATE TABLE IF NOT EXISTS  PostAddress (
     Id BIGSERIAL PRIMARY KEY,

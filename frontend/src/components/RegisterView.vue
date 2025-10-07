@@ -1,123 +1,175 @@
 <template>
-  <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-    <h2 class="text-2xl font-bold mb-6">Registrer ny bruker</h2>
+  <div class="max-w-md mx-auto p-6 bg-white rounded shadow">
+    <h2 class="text-xl font-semibold mb-4">Registrer deg</h2>
 
-    <form @submit.prevent="handleSubmit" class="space-y-4">
-      <div>
-        <label class="block mb-1 font-medium">Fornavn</label>
-        <input v-model="form.firstName" type="text" required class="input" />
+    <form @submit.prevent="registerUser">
+      <!-- Fornavn -->
+      <div class="mb-2">
+        <label>Fornavn:</label>
+        <input
+          v-model="form.firstName"
+          required
+          class="w-full border p-2 rounded"
+        />
       </div>
 
-      <div>
-        <label class="block mb-1 font-medium">Etternavn</label>
-        <input v-model="form.lastName" type="text" required class="input" />
+      <!-- Etternavn -->
+      <div class="mb-2">
+        <label>Etternavn:</label>
+        <input
+          v-model="form.lastName"
+          required
+          class="w-full border p-2 rounded"
+        />
       </div>
 
-      <div>
-        <label class="block mb-1 font-medium">Telefon</label>
-        <input v-model="form.telephone" type="tel" required class="input" />
+      <!-- Telefon -->
+      <div class="mb-2">
+        <label>Telefon:</label>
+        <input
+          v-model="form.telephone"
+          type="text"
+          required
+          class="w-full border p-2 rounded"
+        />
       </div>
 
-      <div>
-        <label class="block mb-1 font-medium">E-post</label>
-        <input v-model="form.email" type="email" required class="input" />
+      <!-- E-post -->
+      <div class="mb-2">
+        <label>Email:</label>
+        <input
+          v-model="form.email"
+          type="email"
+          required
+          class="w-full border p-2 rounded"
+        />
       </div>
 
-      <div>
-        <label class="block mb-1 font-medium">Passord</label>
-        <input v-model="form.password" type="password" required class="input" />
+      <!-- Passord -->
+      <div class="mb-2">
+        <label>Passord:</label>
+        <input
+          v-model="form.password"
+          type="password"
+          required
+          class="w-full border p-2 rounded"
+        />
       </div>
 
-      <div>
-        <label class="block mb-1 font-medium">Rolle</label>
-        <select v-model="form.role" required class="input">
-          <option value="" disabled>Velg rolle</option>
-          <option value="ADMIN">Admin</option>
-          <option value="ARRANGOR">Arrangør</option>
-          <option value="DELTAGER">Deltaker</option>
+      <!-- Adresse -->
+      <h3 class="text-lg font-semibold mt-4 mb-2">Adresse</h3>
+
+      <div class="mb-2">
+        <label>Gate:</label>
+        <input 
+          id="streetName"
+          v-model="form.address.streetName"
+          required
+          class="w-full border p-2 rounded"
+        />
+      </div>
+
+      <!-- Added house number field -->
+      <div class="mb-2">
+        <label>Husnummer:</label>
+        <input
+          v-model="form.address.houseNumber"
+          type="text"
+          required
+          class="w-full border p-2 rounded"
+        />
+      </div>
+
+      <div class="mb-2">
+        <label for="postcode">Postnummer:</label>
+        <input
+          id="postcode"
+          v-model="form.address.postCode"
+          type="text"
+          required
+          class="w-full border p-2 rounded"
+        />
+      </div>
+
+      <div class="mb-2">
+        <label>By:</label>
+        <input
+          v-model="form.address.city"
+          required
+          class="w-full border p-2 rounded"
+        />
+      </div>
+
+      <!-- Added country field -->
+      <div class="mb-2">
+        <label>Land:</label>
+        <input
+          v-model="form.address.country"
+          required
+          class="w-full border p-2 rounded"
+          placeholder="Norge"
+        />
+      </div>
+
+      <!-- Rolle -->
+      <div class="mb-2">
+        <label>Rolle:</label>
+        <select
+          v-model="form.role"
+          required
+          class="w-full border p-2 rounded"
+        >
+          <option value="ADMIN">ADMIN</option>
+          <option value="ARANGOR">ARANGOR</option>
+          <option value="DELTAKER">DELTAKER</option>
+          <option value="USER">USER</option>
         </select>
       </div>
 
-      <div>
-        <label class="block mb-1 font-medium">Adresse</label>
-        <select v-model="form.addressId" required class="input">
-          <option value="" disabled>Velg adresse</option>
-          <option v-for="address in addresses" :key="address.id" :value="address.id">
-            {{ address.street }}, {{ address.city }}
-          </option>
-        </select>
-      </div>
-
+      <!-- Knapp -->
       <button
         type="submit"
-        class="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
       >
         Registrer
       </button>
+
+      <!-- Tilbakemelding -->
+      <p v-if="message" class="mt-2 text-green-600">
+        {{ message }}
+      </p>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { reactive, ref } from "vue";
+import axios from "axios";
 
-const form = ref({
-  firstName: '',
-  lastName: '',
-  telephone: '',
-  email: '',
-  password: '',
-  role: '',
-  addressId: '',
-})
-
-const addresses = ref([])
-
-onMounted(async () => {
-  try {
-    const response = await axios.get('/api/addresses')
-    addresses.value = response.data
-  } catch (error) {
-    console.error('Feil ved lasting av adresser:', error)
+const form = reactive({
+  firstName: "",
+  lastName: "",
+  telephone: "",
+  email: "",
+  password: "",
+  role: "USER",
+  address: {
+    streetName: "",
+    houseNumber: "",
+    postCode: "",
+    city: "",
+    country: ""
   }
-})
+});
 
-async function handleSubmit() {
+const message = ref("");
+
+async function registerUser() {
   try {
-    await axios.post('/api/register', {
-      ...form.value,
-      telephone: Number(form.value.telephone), // konverter til number
-    })
-    alert('Registrering vellykket!')
-    // Nullstill skjema
-    form.value = {
-      firstName: '',
-      lastName: '',
-      telephone: '',
-      email: '',
-      password: '',
-      role: '',
-      addressId: '',
-    }
+    const response = await axios.post("http://localhost:9090/api/auth/register", form);
+    message.value = response.data.message || "Registrering vellykket!";
   } catch (error) {
-    alert('Registrering feilet: ' + (error.response?.data || error.message))
+    message.value = error.response?.data?.message || "Noe gikk galt under registrering.";
   }
 }
 </script>
-
-<style scoped>
-.input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #cbd5e1; /* Tailwind slate-300 */
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-}
-.input:focus {
-  outline: none;
-  border-color: #2563eb; /* Tailwind blue-600 */
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
-}
-</style>

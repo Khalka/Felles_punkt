@@ -2,6 +2,7 @@ package felleskap.punkt.entity;
 
 import felleskap.punkt.Domain.Role;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,26 +15,35 @@ public class Users {
 
     private String firstName;
     private String lastName;
-    private Long telephone;
+    private String telephone;
+    
+    @Column(name = "mailaddress", nullable = false, unique = true)
     private String email;
+    
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", nullable = false)
     private PostAddress address;
 
     @ManyToMany(mappedBy = "registeredUsers")
     private Set<Activity> registeredActivities = new HashSet<>();
 
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
+
     // Tom konstruktør
     public Users() {
     }
 
     // Full konstruktør
-    public Users(Long userId, String firstName, String lastName, Long telephone,
+    public Users(Long userId, String firstName, String lastName, String telephone,
                  String email, String password, Role role, PostAddress address,
                  Set<Activity> registeredActivities) {
         this.userId = userId;
@@ -69,10 +79,10 @@ public class Users {
         this.lastName = lastName;
     }
 
-    public Long getTelephone() {
+    public String getTelephone() {
         return telephone;
     }
-    public void setTelephone(Long telephone) {
+    public void setTelephone(String telephone) {
         this.telephone = telephone;
     }
 
@@ -109,5 +119,19 @@ public class Users {
     }
     public void setRegisteredActivities(Set<Activity> registeredActivities) {
         this.registeredActivities = registeredActivities;
+    }
+
+    public String getResetToken() {
+        return resetToken;
+    }
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
+
+    public LocalDateTime getResetTokenExpiry() {
+        return resetTokenExpiry;
+    }
+    public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) {
+        this.resetTokenExpiry = resetTokenExpiry;
     }
 }

@@ -20,32 +20,38 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import org.springframework.http.HttpMethod;
+
 @Configuration
 public class SecurityConfig {
 
-    // Sikkerhetsfilter som du allerede har:
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // CSRF slått av siden API + frontend
+            .csrf(csrf -> csrf.disable()) // Vi kjører REST API, CSRF kan slås av
+            .cors() // 👈 aktiver CORS-konfig fra WebConfig
+            .and()
 
             .authorizeHttpRequests(auth -> auth
+                // Slipp igjennom register og login
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                // Slipp igjennom preflight-forespørsler
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // Alt annet krever innlogging
                 .anyRequest().authenticated()
             )
 
-            .httpBasic(); // Bruk HTTP Basic auth for enkel demo - kan endres til JWT e.l.
+            .httpBasic(); // midlertidig enkel auth – du kan bytte til JWT senere
 
         return http.build();
     }
 
-    // PasswordEncoder som trengs for autentisering
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // En enkel UserDetailsService med én bruker for testing (erstatt med din egen)
+    // Midlertidig InMemoryUser – bare for å teste at security fungerer
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
         UserDetails user = User.withUsername("user")
@@ -55,20 +61,20 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(user);
     }
 
-    // DaoAuthenticationProvider som bruker UserDetailsService og PasswordEncoder
     @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
-                                                         PasswordEncoder passwordEncoder) {
+    public AuthenticationProvider authenticationProvider(
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
 
-    // AuthenticationManager som bruker authenticationProvider
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http,
-                                                       AuthenticationProvider authenticationProvider) throws Exception {
+    public AuthenticationManager authenticationManager(
+            HttpSecurity http,
+            AuthenticationProvider authenticationProvider) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
             .authenticationProvider(authenticationProvider)
             .build();

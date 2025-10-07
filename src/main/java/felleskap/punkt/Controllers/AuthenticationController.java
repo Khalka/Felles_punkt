@@ -2,6 +2,7 @@ package felleskap.punkt.Controllers;
 
 import felleskap.punkt.Domain.Role;
 import felleskap.punkt.Repository.UsersRepository;
+import felleskap.punkt.dto.RegisterRequest;
 import felleskap.punkt.entity.Users;
 import felleskap.punkt.security.jwt.JwtService;
 import jakarta.validation.Valid;
@@ -15,8 +16,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -82,21 +85,10 @@ public class AuthenticationController {
         }
     }
 
-    // DTO for register request (utvid med flere felt ved behov)
-    public static class RegisterRequest {
+    // DTOs for forgot password feature
+    public static class ForgotPasswordRequest {
         @NotBlank(message = "E-post kan ikke være tom")
         private String email;
-
-        @NotBlank(message = "Passord kan ikke være tomt")
-        private String password;
-
-        @NotBlank(message = "Rolle må oppgis")
-        private String role;
-
-        // Eksempel på ekstra felter hvis ønskelig
-        private String firstName;
-        private String lastName;
-        private Long telephone;
 
         public String getEmail() {
             return email;
@@ -104,25 +96,27 @@ public class AuthenticationController {
         public void setEmail(String email) {
             this.email = email;
         }
-        public String getPassword() {
-            return password;
-        }
-        public void setPassword(String password) {
-            this.password = password;
-        }
-        public String getRole() {
-            return role;
-        }
-        public void setRole(String role) {
-            this.role = role;
-        }
+    }
 
-        public String getFirstName() { return firstName; }
-        public void setFirstName(String firstName) { this.firstName = firstName; }
-        public String getLastName() { return lastName; }
-        public void setLastName(String lastName) { this.lastName = lastName; }
-        public Long getTelephone() { return telephone; }
-        public void setTelephone(Long telephone) { this.telephone = telephone; }
+    public static class ResetPasswordRequest {
+        @NotBlank(message = "Token kan ikke være tom")
+        private String token;
+
+        @NotBlank(message = "Nytt passord kan ikke være tomt")
+        private String newPassword;
+
+        public String getToken() {
+            return token;
+        }
+        public void setToken(String token) {
+            this.token = token;
+        }
+        public String getNewPassword() {
+            return newPassword;
+        }
+        public void setNewPassword(String newPassword) {
+            this.newPassword = newPassword;
+        }
     }
 
     @PostMapping("/register")
@@ -137,21 +131,14 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body(Map.of("message", "E-post er allerede registrert"));
         }
 
-        Role role;
-        try {
-            role = Role.valueOf(request.getRole().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Ugyldig rolle"));
-        }
-
         Users user = new Users();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(role);
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setTelephone(request.getTelephone());
-        // Husk at hvis Users krever adresse, må du håndtere det her også (kan være null for nå)
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+        user.setAddress(request.getAddress());
 
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "Registrering vellykket"));
@@ -178,5 +165,66 @@ public class AuthenticationController {
         } catch (AuthenticationException ex) {
             return ResponseEntity.status(401).body(Map.of("message", "Feil brukernavn eller passord."));
         }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMsg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return ResponseEntity.badRequest().body(Map.of("message", errorMsg));
+        }
+
+        Optional<Users> userOptional = userRepository.findByEmail(request.getEmail());
+        if (userOptional.isEmpty()) {
+            // For security, don't reveal if email exists
+            return ResponseEntity.ok(Map.of("message", "Hvis e-posten finnes, vil du motta en tilbakestillingslenke."));
+        }
+
+        Users user = userOptional.get();
+        
+        // Generate reset token
+        String resetToken = UUID.randomUUID().toString();
+        user.setResetToken(resetToken);
+        user.setResetTokenExpiry(LocalDateTime.now().plusHours(1)); // Token valid for 1 hour
+        
+        userRepository.save(user);
+
+        // TODO: Send email with reset link
+        // For now, we'll just return the token (in production, this should be sent via email)
+        System.out.println("Reset token for " + user.getEmail() + ": " + resetToken);
+        
+        return ResponseEntity.ok(Map.of(
+            "message", "Hvis e-posten finnes, vil du motta en tilbakestillingslenke.",
+            "token", resetToken // Remove this in production
+        ));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMsg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return ResponseEntity.badRequest().body(Map.of("message", errorMsg));
+        }
+
+        Optional<Users> userOptional = userRepository.findByResetToken(request.getToken());
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Ugyldig eller utløpt token"));
+        }
+
+        Users user = userOptional.get();
+        
+        // Check if token is expired
+        if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Token har utløpt"));
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Passord har blitt tilbakestilt"));
     }
 }

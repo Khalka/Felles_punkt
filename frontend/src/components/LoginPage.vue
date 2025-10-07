@@ -10,6 +10,14 @@
         <label for="password" class="block mb-1">Passord</label>
         <input id="password" v-model="password" type="password" required class="w-full border p-2 rounded" />
       </div>
+      
+      <!-- Added forgot password link -->
+      <div class="mb-4 text-right">
+        <router-link to="/forgot-password" class="text-sm text-blue-600 hover:underline">
+          Glemt passord?
+        </router-link>
+      </div>
+
       <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
         Logg inn
       </button>
