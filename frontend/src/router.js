@@ -1,7 +1,6 @@
 "use client"
 
 import { createRouter, createWebHistory } from "vue-router"
-import { useAuth } from "./composables/useAuth"
 
 import LoginPage from "./components/LoginPage.vue"
 import RegisterView from "./components/RegisterView.vue"
@@ -21,22 +20,22 @@ const routes = [
   {
     path: "/admin",
     component: AdminView,
-    meta: { requiresAuth: true, roles: ["admin"] },
+    meta: { requiresAuth: true, roles: ["ADMIN"] },
   },
   {
     path: "/arrangor",
     component: ArrangorView,
-    meta: { requiresAuth: true, roles: ["arrangor"] },
+    meta: { requiresAuth: true, roles: ["ARANGOR"] },
   },
   {
     path: "/deltaker",
     component: DeltakerView,
-    meta: { requiresAuth: true, roles: ["deltaker"] },
+    meta: { requiresAuth: true, roles: ["USER", "DELTAKER"] },
   },
   {
     path: "/mine-aktiviteter",
     component: MyActivities,
-    meta: { requiresAuth: true, roles: ["arrangor", "deltaker"] },
+    meta: { requiresAuth: true, roles: ["ARANGOR", "USER", "DELTAKER"] },
   },
 ]
 
@@ -45,27 +44,43 @@ const router = createRouter({
   routes,
 })
 
-// **Navigasjonsvakt for rolle-tilgang:**
 router.beforeEach((to, from, next) => {
-  const auth = useAuth()
-  const userRole = auth.getRole()
+  const token = localStorage.getItem("token")
+  const userRole = localStorage.getItem("role")
 
   if (to.meta.requiresAuth) {
-    if (!userRole) {
-      // Ikke logget inn - send til login
+    if (!token || !userRole) {
+      // Not logged in - redirect to login
       next("/login")
     } else if (to.meta.roles && !to.meta.roles.includes(userRole)) {
-      // Rolle ikke tillatt - kan sende til "ikke-tilgang"-side eller login
+      // Role not allowed - redirect to appropriate dashboard
       alert("Du har ikke tilgang til denne siden.")
-      next("/login")
+      redirectToDashboard(userRole, next)
     } else {
-      // Tilgang OK
+      // Access granted
       next()
     }
   } else {
-    // Side uten auth krav
-    next()
+    // No auth required
+    // If already logged in and trying to access login/register, redirect to dashboard
+    if ((to.path === "/login" || to.path === "/register") && token && userRole) {
+      redirectToDashboard(userRole, next)
+    } else {
+      next()
+    }
   }
 })
+
+function redirectToDashboard(role, next) {
+  if (role === "ADMIN") {
+    next("/admin")
+  } else if (role === "ARANGOR") {
+    next("/arrangor")
+  } else if (role === "USER" || role === "DELTAKER") {
+    next("/deltaker")
+  } else {
+    next("/login")
+  }
+}
 
 export default router

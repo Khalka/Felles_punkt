@@ -20,6 +20,13 @@ public class ActivityController {
         this.activityService = activityService;
     }
 
+    // Nytt endepunkt for å hente alle aktiviteter (for USER rolle)
+    @GetMapping
+    public ResponseEntity<List<Activity>> getAllActivities() {
+        List<Activity> activities = activityService.getAllActivities();
+        return ResponseEntity.ok(activities);
+    }
+
     // Hent alle aktiviteter til innlogget arrangør
     @GetMapping("/mine")
     public ResponseEntity<List<Activity>> getMyActivities(Authentication authentication) {

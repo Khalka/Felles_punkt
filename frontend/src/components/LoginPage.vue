@@ -11,7 +11,6 @@
         <input id="password" v-model="password" type="password" required class="w-full border p-2 rounded" />
       </div>
       
-      <!-- Added forgot password link -->
       <div class="mb-4 text-right">
         <router-link to="/forgot-password" class="text-sm text-blue-600 hover:underline">
           Glemt passord?
@@ -47,15 +46,12 @@ async function login() {
     localStorage.setItem('token', token);
     localStorage.setItem('role', role);
 
-    // Redirect basert på rolle
-    if (role === 'ARRANGOR') {
-      router.push('/arrangor');
-    } else if (role === 'DELTAKER') {
-      router.push('/deltaker');
-    } else if (role === 'ADMIN') {
+    if (role === 'ADMIN') {
       router.push('/admin');
+    } else if (role === 'ARANGOR') {
+      router.push('/arrangor');
     } else {
-      router.push('/');
+      router.push('/deltaker');
     }
   } catch (error) {
     alert('Feil brukernavn eller passord');

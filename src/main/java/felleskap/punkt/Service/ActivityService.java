@@ -33,6 +33,10 @@ public class ActivityService {
         this.usersRepository = usersRepository;
     }
 
+    public List<Activity> getAllActivities() {
+        return activityRepository.findAll();
+    }
+
     public List<Activity> getActivitiesByOrganizerEmail(String email) {
         Optional<Organizer> organizer = organizerRepository.findByEmail(email);
         if (organizer.isEmpty()) {
@@ -104,6 +108,23 @@ public class ActivityService {
 
         if (activity.getRegisteredUsers().contains(user)) {
             throw new RuntimeException("Bruker er allerede påmeldt denne aktiviteten");
+        }
+
+        List<Activity> conflictingActivities = activityRepository.findConflictingActivitiesForUser(
+            user,
+            activity.getStartTime(),
+            activity.getEndTime()
+        );
+
+        if (!conflictingActivities.isEmpty()) {
+            Activity conflict = conflictingActivities.get(0);
+            throw new RuntimeException(
+                "Du er allerede påmeldt en aktivitet som kolliderer med denne: " +
+                conflict.getActivityType() + " (" +
+                conflict.getStartTime().toLocalDate() + " " +
+                conflict.getStartTime().toLocalTime() + " - " +
+                conflict.getEndTime().toLocalTime() + ")"
+            );
         }
 
         activity.getRegisteredUsers().add(user);

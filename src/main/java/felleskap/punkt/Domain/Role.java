@@ -1,8 +1,7 @@
 package felleskap.punkt.Domain;
 
 public enum Role {
-    ARANGOR,
-    USER,
-    ADMIN,
-    DELTAKER
+    ADMIN,    // Overall administration
+    ARANGOR,  // Can create and manage activities
+    USER      // Can participate in activities (same as DELTAKER)
 }

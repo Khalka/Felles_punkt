@@ -9,21 +9,26 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
 
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-
 import org.springframework.http.HttpMethod;
 
 @Configuration
 public class SecurityConfig {
+
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -31,17 +36,34 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Vi kjører REST API, CSRF kan slås av
             .cors() // 👈 aktiver CORS-konfig fra WebConfig
             .and()
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
 
             .authorizeHttpRequests(auth -> auth
                 // Slipp igjennom register og login
-                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                // Slipp igjennom preflight-forespørsler
+                .requestMatchers("/api/auth/register", "/api/auth/login", 
+                                "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // Admin endpoints - only ADMIN can access
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                
+                // Activity management - only ARANGOR can create/update/delete
+                .requestMatchers(HttpMethod.POST, "/api/activities").hasRole("ARANGOR")
+                .requestMatchers(HttpMethod.PUT, "/api/activities/**").hasRole("ARANGOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/activities/**").hasRole("ARANGOR")
+                .requestMatchers("/api/activities/mine").hasRole("ARANGOR")
+                
+                // Activity participation - USER can view and register
+                .requestMatchers(HttpMethod.GET, "/api/activities").hasAnyRole("USER", "ARANGOR", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/activities/*/register").hasRole("USER")
+                
                 // Alt annet krever innlogging
                 .anyRequest().authenticated()
             )
-
-            .httpBasic(); // midlertidig enkel auth – du kan bytte til JWT senere
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -52,14 +74,6 @@ public class SecurityConfig {
     }
 
     // Midlertidig InMemoryUser – bare for å teste at security fungerer
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails user = User.withUsername("user")
-            .password(passwordEncoder.encode("password"))
-            .roles("USER")
-            .build();
-        return new InMemoryUserDetailsManager(user);
-    }
 
     @Bean
     public AuthenticationProvider authenticationProvider(
