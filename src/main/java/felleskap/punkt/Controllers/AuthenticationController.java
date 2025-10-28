@@ -2,8 +2,10 @@ package felleskap.punkt.Controllers;
 
 import felleskap.punkt.Domain.Role;
 import felleskap.punkt.Repository.UsersRepository;
+import felleskap.punkt.Repository.OrganizerRepository;
 import felleskap.punkt.dto.RegisterRequest;
 import felleskap.punkt.entity.Users;
+import felleskap.punkt.entity.Organizer;
 import felleskap.punkt.security.jwt.JwtService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -30,19 +32,22 @@ public class AuthenticationController {
     private final JwtService jwtService;
     private final UsersRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OrganizerRepository organizerRepository;
 
     public AuthenticationController(
             AuthenticationManager authenticationManager,
             UserDetailsService userDetailsService,
             JwtService jwtService,
             UsersRepository userRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            OrganizerRepository organizerRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.organizerRepository = organizerRepository;
     }
 
     // DTO for login request
@@ -141,6 +146,15 @@ public class AuthenticationController {
         user.setAddress(request.getAddress());
 
         userRepository.save(user);
+
+        if (request.getRole() == Role.ARANGOR) {
+            Organizer organizer = new Organizer();
+            organizer.setName(request.getFirstName() + " " + request.getLastName());
+            organizer.setEmail(request.getEmail());
+            organizer.setPhone(request.getTelephone());
+            organizerRepository.save(organizer);
+        }
+
         return ResponseEntity.ok(Map.of("message", "Registrering vellykket"));
     }
 

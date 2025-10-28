@@ -2,6 +2,7 @@ package felleskap.punkt.Config;
 
 import felleskap.punkt.security.jwt.JwtService;
 import felleskap.punkt.security.user.UserDetailsServiceImpl;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,30 +41,39 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Hent JWT-token uten "Bearer " prefix
-        final String jwt = authHeader.substring(7);
+        try {
+            // Hent JWT-token uten "Bearer " prefix
+            final String jwt = authHeader.substring(7);
 
-        // Hent brukernavn fra token (kan være null hvis token ikke gyldig eller utløpt)
-        final String username = jwtService.extractUsername(jwt);
+            // Hent brukernavn fra token (kan være null hvis token ikke gyldig eller utløpt)
+            final String username = jwtService.extractUsername(jwt);
 
-        // Sjekk at brukernavn finnes og at ingen allerede er autentisert i konteksten
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Sjekk at brukernavn finnes og at ingen allerede er autentisert i konteksten
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // Last inn brukerdetaljer fra database eller annen lagring
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                // Last inn brukerdetaljer fra database eller annen lagring
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // Sjekk at token er gyldig for denne brukeren
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                // Sett opp autentisering i Spring Security kontekst
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
+                // Sjekk at token er gyldig for denne brukeren
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    // Sett opp autentisering i Spring Security kontekst
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
 
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (ExpiredJwtException e) {
+            // Token is expired - log and continue without authentication
+            // This allows the request to reach public endpoints like /api/auth/login
+            System.out.println("JWT token expired: " + e.getMessage());
+        } catch (Exception e) {
+            // Any other JWT parsing error - log and continue
+            System.out.println("JWT parsing error: " + e.getMessage());
         }
 
         // Fortsett filterkjeden
