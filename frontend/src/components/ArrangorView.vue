@@ -11,26 +11,54 @@
                    @save="saveActivity" 
                    @cancel="cancelEdit" />
 
-    <div v-if="activities.length === 0">Ingen aktiviteter funnet.</div>
+    <!-- Added search input for filtering activities by title -->
+    <div v-if="!showForm" class="mb-6">
+      <input 
+        v-model="searchQuery"
+        type="text"
+        placeholder="Søk etter aktivitet (tittel)..."
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
 
-    <ul>
-      <li v-for="activity in activities" :key="activity.activityId" class="border p-4 mb-2 rounded shadow">
-        <h2 class="text-xl font-semibold">{{ activity.activityType }}</h2>
-        <p><strong>Sted:</strong> {{ activity.holdPlace }}</p>
-        <p><strong>Beskrivelse:</strong> {{ activity.description }}</p>
-        <p><strong>Start:</strong> {{ formatDate(activity.startTime) }}</p>
-        <p><strong>Slutt:</strong> {{ formatDate(activity.endTime) }}</p>
-        <p><strong>Lokasjon ID:</strong> {{ activity.location?.id || 'N/A' }}</p>
+    <!-- Updated to show filtered activities count -->
+    <div v-if="!showForm && filteredActivities.length === 0 && searchQuery" class="text-gray-600 mb-4">
+      Ingen aktiviteter funnet for søket "{{ searchQuery }}".
+    </div>
+    <div v-if="!showForm && activities.length === 0" class="text-gray-600 mb-4">
+      Ingen aktiviteter funnet.
+    </div>
 
-        <button @click="editActivity(activity)" class="mr-2 bg-yellow-500 px-3 py-1 rounded hover:bg-yellow-600">Endre</button>
-        <button @click="deleteActivity(activity.activityId)" class="bg-red-600 px-3 py-1 rounded hover:bg-red-700 text-white">Slett</button>
-      </li>
-    </ul>
+    <!-- Converted list to responsive grid layout -->
+    <div v-if="!showForm && filteredActivities.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-for="activity in filteredActivities" :key="activity.activityId" 
+           class="border border-gray-200 rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow bg-white">
+        <h2 class="text-xl font-semibold mb-3 text-gray-800">{{ activity.activityType }}</h2>
+        <div class="space-y-2 mb-4">
+          <p class="text-gray-700"><strong>Sted:</strong> {{ activity.holdPlace }}</p>
+          <p class="text-gray-600"><strong>Beskrivelse:</strong> {{ activity.description }}</p>
+          <p class="text-gray-700"><strong>Start:</strong> {{ formatDate(activity.startTime) }}</p>
+          <p class="text-gray-700"><strong>Slutt:</strong> {{ formatDate(activity.endTime) }}</p>
+          <p class="text-gray-600"><strong>Lokasjon ID:</strong> {{ activity.location?.id || 'N/A' }}</p>
+        </div>
+
+        <div class="flex gap-2 mt-4">
+          <button @click="editActivity(activity)" 
+                  class="flex-1 bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 transition-colors">
+            Endre
+          </button>
+          <button @click="deleteActivity(activity.activityId)" 
+                  class="flex-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition-colors">
+            Slett
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from '@/services/api';
 import ActivityForm from '@/components/ActivityForm.vue';
 import { useRouter } from 'vue-router';
@@ -40,18 +68,20 @@ const showForm = ref(false);
 const selectedActivity = ref(null);
 const isEditMode = ref(false);
 const router = useRouter();
+const searchQuery = ref('');
+
+const filteredActivities = computed(() => {
+  if (!searchQuery.value) {
+    return activities.value;
+  }
+  const query = searchQuery.value.toLowerCase();
+  return activities.value.filter(activity => 
+    activity.activityType.toLowerCase().includes(query)
+  );
+});
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleString();
-}
-
-async function fetchActivities() {
-  try {
-    const response = await axios.get('/api/activities/mine');
-    activities.value = response.data;
-  } catch (error) {
-    alert('Kunne ikke hente aktiviteter');
-  }
 }
 
 function startCreate() {
@@ -100,6 +130,15 @@ function logout() {
   localStorage.clear();
   router.push('/login');
 }
+
+const fetchActivities = async () => {
+  try {
+    const response = await axios.get('/api/activities');
+    activities.value = response.data;
+  } catch {
+    alert('Kunne ikke hente aktiviteter');
+  }
+};
 
 onMounted(fetchActivities);
 </script>
