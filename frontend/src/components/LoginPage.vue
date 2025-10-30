@@ -28,10 +28,12 @@
 import { ref } from 'vue';
 import axios from '@/services/api';
 import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
 
 const email = ref('');
 const password = ref('');
 const router = useRouter();
+const auth = useAuth();
 
 async function login() {
   try {
@@ -42,9 +44,10 @@ async function login() {
 
     const token = response.data.token;
     const role = response.data.role;
+    const firstName = response.data.firstName;
+    const lastName = response.data.lastName;
 
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', role);
+    auth.login({ token, role, firstName, lastName });
 
     if (role === 'ADMIN') {
       router.push('/admin');

@@ -48,6 +48,11 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("token")
   const userRole = localStorage.getItem("role")
 
+  if ((to.path === "/" || to.path === "/login" || to.path === "/register") && token && userRole) {
+    redirectToDashboard(userRole, next)
+    return
+  }
+
   if (to.meta.requiresAuth) {
     if (!token || !userRole) {
       // Not logged in - redirect to login
@@ -62,12 +67,7 @@ router.beforeEach((to, from, next) => {
     }
   } else {
     // No auth required
-    // If already logged in and trying to access login/register, redirect to dashboard
-    if ((to.path === "/login" || to.path === "/register") && token && userRole) {
-      redirectToDashboard(userRole, next)
-    } else {
-      next()
-    }
+    next()
   }
 })
 

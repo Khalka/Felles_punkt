@@ -76,10 +76,14 @@ public class AuthenticationController {
     public static class LoginResponse {
         private String token;
         private String role;
+        private String firstName;
+        private String lastName;
 
-        public LoginResponse(String token, String role) {
+        public LoginResponse(String token, String role, String firstName, String lastName) {
             this.token = token;
             this.role = role;
+            this.firstName = firstName;
+            this.lastName = lastName;
         }
 
         public String getToken() {
@@ -87,6 +91,12 @@ public class AuthenticationController {
         }
         public String getRole() {
             return role;
+        }
+        public String getFirstName() {
+            return firstName;
+        }
+        public String getLastName() {
+            return lastName;
         }
     }
 
@@ -175,7 +185,7 @@ public class AuthenticationController {
             Users user = userRepository.findByEmail(request.getUsername())
                     .orElseThrow(() -> new RuntimeException("Bruker ikke funnet"));
 
-            return ResponseEntity.ok(new LoginResponse(jwt, user.getRole().name()));
+            return ResponseEntity.ok(new LoginResponse(jwt, user.getRole().name(), user.getFirstName(), user.getLastName()));
         } catch (AuthenticationException ex) {
             return ResponseEntity.status(401).body(Map.of("message", "Feil brukernavn eller passord."));
         }

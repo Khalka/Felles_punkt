@@ -1,7 +1,7 @@
 <template>
   <div class="p-6">
     <h1 class="text-3xl font-bold mb-4">Arrangør Dashboard</h1>
-    <button @click="logout" class="mb-6 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Logg ut</button>
+    <!-- Removed duplicate "Logg ut" button from dashboard -->
 
     <button @click="startCreate" class="mb-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Ny aktivitet</button>
 
@@ -124,11 +124,6 @@ async function deleteActivity(id) {
   } catch {
     alert('Kunne ikke slette aktiviteten');
   }
-}
-
-function logout() {
-  localStorage.clear();
-  router.push('/login');
 }
 
 const fetchActivities = async () => {

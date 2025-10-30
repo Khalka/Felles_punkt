@@ -4,14 +4,15 @@ import { useAuth } from '../composables/useAuth'
 import { useRouter } from 'vue-router'
 
 const showMenu = ref(false)
+const auth = useAuth()
+const router = useRouter()
+
+const userRole = computed(() => auth.getRole()?.toUpperCase())
+const userName = computed(() => auth.getFullName())
+
 function toggleMenu() {
   showMenu.value = !showMenu.value
 }
-
-const auth = useAuth()
-const userRole = computed(() => auth.getRole())
-
-const router = useRouter()
 
 function logout() {
   auth.logout()
@@ -27,13 +28,15 @@ function logout() {
       </div>
 
       <div class="hidden md:flex space-x-4 items-center">
+        <!-- Only show login/register when NOT authenticated -->
         <router-link v-if="!userRole" to="/login" class="hover:underline">Logg inn</router-link>
         <router-link v-if="!userRole" to="/register" class="hover:underline">Registrer deg</router-link>
 
-        <router-link v-if="userRole === 'admin'" to="/admin" class="hover:underline">Admin</router-link>
-        <router-link v-if="userRole === 'arrangor'" to="/arrangor" class="hover:underline">Arrangør</router-link>
-        <router-link v-if="userRole === 'deltaker'" to="/deltaker" class="hover:underline">Deltaker</router-link>
-        <router-link v-if="userRole === 'arrangor' || userRole === 'deltaker'" to="/mine-aktiviteter" class="hover:underline">Mine Aktiviteter</router-link>
+        <!-- Show user's name for all logged-in users instead of role labels -->
+        <router-link v-if="userRole === 'ADMIN'" to="/admin" class="hover:underline">{{ userName }}</router-link>
+        <router-link v-if="userRole === 'ARANGOR'" to="/arrangor" class="hover:underline">{{ userName }}</router-link>
+        <router-link v-if="userRole === 'USER'" to="/deltaker" class="hover:underline">{{ userName }}</router-link>
+        <router-link v-if="userRole === 'ARANGOR' || userRole === 'USER'" to="/mine-aktiviteter" class="hover:underline">Mine Aktiviteter</router-link>
 
         <button v-if="userRole" @click="logout" class="ml-4 bg-red-500 hover:bg-red-700 px-3 py-1 rounded">
           Logg ut
@@ -50,13 +53,15 @@ function logout() {
     </div>
 
     <div v-if="showMenu" class="md:hidden mt-2 space-y-2 px-4">
+      <!-- Only show login/register when NOT authenticated -->
       <router-link v-if="!userRole" @click="toggleMenu" to="/login" class="block hover:underline">Logg inn</router-link>
       <router-link v-if="!userRole" @click="toggleMenu" to="/register" class="block hover:underline">Registrer deg</router-link>
 
-      <router-link v-if="userRole === 'admin'" @click="toggleMenu" to="/admin" class="block hover:underline">Admin</router-link>
-      <router-link v-if="userRole === 'arrangor'" @click="toggleMenu" to="/arrangor" class="block hover:underline">Arrangør</router-link>
-      <router-link v-if="userRole === 'deltaker'" @click="toggleMenu" to="/deltaker" class="block hover:underline">Deltaker</router-link>
-      <router-link v-if="userRole === 'arrangor' || userRole === 'deltaker'" @click="toggleMenu" to="/mine-aktiviteter" class="block hover:underline">Mine Aktiviteter</router-link>
+      <!-- Show user's name for all logged-in users instead of role labels -->
+      <router-link v-if="userRole === 'ADMIN'" @click="toggleMenu" to="/admin" class="block hover:underline">{{ userName }}</router-link>
+      <router-link v-if="userRole === 'ARANGOR'" @click="toggleMenu" to="/arrangor" class="block hover:underline">{{ userName }}</router-link>
+      <router-link v-if="userRole === 'USER'" @click="toggleMenu" to="/deltaker" class="block hover:underline">{{ userName }}</router-link>
+      <router-link v-if="userRole === 'ARANGOR' || userRole === 'USER'" @click="toggleMenu" to="/mine-aktiviteter" class="block hover:underline">Mine Aktiviteter</router-link>
 
       <button v-if="userRole" @click="logout" class="block w-full text-left bg-red-500 hover:bg-red-700 px-3 py-1 rounded">
         Logg ut
