@@ -18,6 +18,9 @@ public class Activity {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
+    @Column(columnDefinition = "TEXT")
+    private String image;
+
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     private Locations location;
@@ -120,5 +123,13 @@ public class Activity {
 
     public void setRegisteredUsers(Set<Users> registeredUsers) {
         this.registeredUsers = registeredUsers;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

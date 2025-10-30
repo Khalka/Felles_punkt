@@ -46,6 +46,8 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
+                .requestMatchers(HttpMethod.GET, "/api/activities").permitAll()
+                
                 // Admin endpoints - only ADMIN can access
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
@@ -56,8 +58,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/activities/**").hasRole("ARANGOR")
                 .requestMatchers("/api/activities/mine").hasRole("ARANGOR")
                 
-                // Activity participation - USER can view and register
-                .requestMatchers(HttpMethod.GET, "/api/activities").hasAnyRole("USER", "ARANGOR", "ADMIN")
+                // Activity participation - USER can register
                 .requestMatchers(HttpMethod.POST, "/api/activities/*/register").hasRole("USER")
                 
                 // Alt annet krever innlogging

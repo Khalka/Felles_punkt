@@ -2,6 +2,7 @@
 
 import { createRouter, createWebHistory } from "vue-router"
 
+import HomePage from "./components/HomePage.vue"
 import LoginPage from "./components/LoginPage.vue"
 import RegisterView from "./components/RegisterView.vue"
 import AdminView from "./components/AdminView.vue"
@@ -12,7 +13,7 @@ import ForgotPasswordPage from "./components/ForgotPasswordPage.vue"
 import ResetPasswordPage from "./components/ResetPasswordPage.vue"
 
 const routes = [
-  { path: "/", component: LoginPage },
+  { path: "/", component: HomePage },
   { path: "/login", component: LoginPage },
   { path: "/register", component: RegisterView },
   { path: "/forgot-password", component: ForgotPasswordPage },
@@ -48,7 +49,7 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("token")
   const userRole = localStorage.getItem("role")
 
-  if ((to.path === "/" || to.path === "/login" || to.path === "/register") && token && userRole) {
+  if ((to.path === "/login" || to.path === "/register") && token && userRole) {
     redirectToDashboard(userRole, next)
     return
   }
