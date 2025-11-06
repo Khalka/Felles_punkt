@@ -8,6 +8,7 @@ const state = reactive({
   token: localStorage.getItem("token") || null,
   firstName: localStorage.getItem("firstName") || null,
   lastName: localStorage.getItem("lastName") || null,
+  email: localStorage.getItem("email") || null,
 })
 
 function login(userData) {
@@ -16,11 +17,13 @@ function login(userData) {
   state.token = userData.token
   state.firstName = userData.firstName
   state.lastName = userData.lastName
+  state.email = userData.email
 
   localStorage.setItem("role", userData.role)
   localStorage.setItem("token", userData.token)
   localStorage.setItem("firstName", userData.firstName)
   localStorage.setItem("lastName", userData.lastName)
+  localStorage.setItem("email", userData.email)
 }
 
 function logout() {
@@ -29,11 +32,13 @@ function logout() {
   state.token = null
   state.firstName = null
   state.lastName = null
+  state.email = null
 
   localStorage.removeItem("role")
   localStorage.removeItem("token")
   localStorage.removeItem("firstName")
   localStorage.removeItem("lastName")
+  localStorage.removeItem("email")
 }
 
 function getRole() {
@@ -58,6 +63,7 @@ export function useAuth() {
     token: readonly(state.token),
     firstName: readonly(state.firstName),
     lastName: readonly(state.lastName),
+    email: readonly(state.email),
     login,
     logout,
     getRole,

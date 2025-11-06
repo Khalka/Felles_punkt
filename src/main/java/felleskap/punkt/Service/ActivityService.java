@@ -62,6 +62,9 @@ public class ActivityService {
         activity.setEndTime(dto.getEndTime());
         activity.setLocation(location);
         activity.setOrganizer(organizer);
+        if (dto.getImage() != null) {
+            activity.setImage(dto.getImage());
+        }
 
         return activityRepository.save(activity);
     }
@@ -71,7 +74,7 @@ public class ActivityService {
                 .orElseThrow(() -> new RuntimeException("Aktivitet ikke funnet"));
 
         if (!activity.getOrganizer().getEmail().equals(organizerEmail)) {
-            throw new RuntimeException("Ikke tilgang til å endre denne aktiviteten");
+            throw new RuntimeException("Du har ikke tilgang til å endre denne aktiviteten. Den tilhører en annen arrangør.");
         }
 
         Locations location = locationsRepository.findById(dto.getLocationId())
@@ -83,6 +86,9 @@ public class ActivityService {
         activity.setStartTime(dto.getStartTime());
         activity.setEndTime(dto.getEndTime());
         activity.setLocation(location);
+        if (dto.getImage() != null) {
+            activity.setImage(dto.getImage());
+        }
 
         return activityRepository.save(activity);
     }
@@ -92,7 +98,7 @@ public class ActivityService {
                 .orElseThrow(() -> new RuntimeException("Aktivitet ikke funnet"));
 
         if (!activity.getOrganizer().getEmail().equals(organizerEmail)) {
-            throw new RuntimeException("Ikke tilgang til å slette denne aktiviteten");
+            throw new RuntimeException("Du har ikke tilgang til å slette denne aktiviteten. Den tilhører en annen arrangør.");
         }
 
         activityRepository.deleteById(id);

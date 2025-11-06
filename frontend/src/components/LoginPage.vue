@@ -47,7 +47,7 @@ async function login() {
     const firstName = response.data.firstName;
     const lastName = response.data.lastName;
 
-    auth.login({ token, role, firstName, lastName });
+    auth.login({ token, role, firstName, lastName, email: email.value });
 
     if (role === 'ADMIN') {
       router.push('/admin');

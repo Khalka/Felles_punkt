@@ -27,8 +27,10 @@ public class ActivityDto {
     @NotNull
     private Long organizerId;
 
+    private String image;
+
     // Getters + Setters...
-     public Long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -90,5 +92,13 @@ public class ActivityDto {
 
     public void setOrganizerId(Long organizerId) {
         this.organizerId = organizerId;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
