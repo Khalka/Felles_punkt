@@ -33,35 +33,39 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Vi kjører REST API, CSRF kan slås av
-            .cors() // 👈 aktiver CORS-konfig fra WebConfig
+            .csrf(csrf -> csrf.disable())
+            .cors()
             .and()
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
             .authorizeHttpRequests(auth -> auth
-                // Slipp igjennom register og login
+                // Allow public endpoints
                 .requestMatchers("/api/auth/register", "/api/auth/login", 
                                 "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
-                .requestMatchers(HttpMethod.GET, "/api/activities").permitAll()
-                
-                // Admin endpoints - only ADMIN can access
+                // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                 
-                // Activity management - only ARANGOR can create/update/delete
+                // Activity management - only ARANGOR can create/update/delete their own activities
                 .requestMatchers(HttpMethod.POST, "/api/activities").hasRole("ARANGOR")
                 .requestMatchers(HttpMethod.PUT, "/api/activities/**").hasRole("ARANGOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/activities/**").hasRole("ARANGOR")
-                .requestMatchers("/api/activities/mine").hasRole("ARANGOR")
                 
-                // Activity participation - USER can register
+                // GET /api/activities/mine - only for ARANGOR
+                .requestMatchers(HttpMethod.GET, "/api/activities/mine").hasRole("ARANGOR")
+                
+                // GET /api/activities - general endpoint for all authenticated users
+                .requestMatchers(HttpMethod.GET, "/api/activities").authenticated()
+                
+                // Activity registration endpoints for users
                 .requestMatchers(HttpMethod.POST, "/api/activities/*/register").hasRole("USER")
+                .requestMatchers(HttpMethod.DELETE, "/api/activities/*/register").hasRole("USER")
                 
-                // Alt annet krever innlogging
+                // Require authentication for everything else
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -73,8 +77,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    // Midlertidig InMemoryUser – bare for å teste at security fungerer
 
     @Bean
     public AuthenticationProvider authenticationProvider(

@@ -49,6 +49,13 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("token")
   const userRole = localStorage.getItem("role")
 
+  // If navigating to login/register without token, always allow it
+  if ((to.path === "/login" || to.path === "/register") && (!token || !userRole)) {
+    next()
+    return
+  }
+
+  // If already logged in and trying to access login/register, redirect to dashboard
   if ((to.path === "/login" || to.path === "/register") && token && userRole) {
     redirectToDashboard(userRole, next)
     return

@@ -24,7 +24,7 @@ function logout() {
   <nav class="bg-blue-600 text-white px-4 py-3 shadow-md">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="text-xl font-semibold">
-        <router-link to="/" class="hover:underline">MinApp</router-link>
+        <router-link to="/" class="hover:underline">FellesskapsPunkt</router-link>
       </div>
 
       <div class="hidden md:flex space-x-4 items-center">
@@ -38,14 +38,14 @@ function logout() {
         <router-link v-if="userRole === 'USER'" to="/deltaker" class="hover:underline">{{ userName }}</router-link>
         <router-link v-if="userRole === 'ARANGOR' || userRole === 'USER'" to="/mine-aktiviteter" class="hover:underline">Mine Aktiviteter</router-link>
 
-        <button v-if="userRole" @click="logout" class="ml-4 bg-red-500 hover:bg-red-700 px-3 py-1 rounded">
+      <button v-if="userRole" @click="logout" class="ml-4 bg-red-500 hover:bg-red-700 px-3 py-1 rounded">
           Logg ut
-        </button>
-      </div>
+        </button> 
+      </div> 
 
       <button class="md:hidden" @click="toggleMenu">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-             viewBox="0 0 24 24" stroke="currentColor">
+            viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 6h16M4 12h16M4 18h16" />
         </svg>
@@ -63,9 +63,9 @@ function logout() {
       <router-link v-if="userRole === 'USER'" @click="toggleMenu" to="/deltaker" class="block hover:underline">{{ userName }}</router-link>
       <router-link v-if="userRole === 'ARANGOR' || userRole === 'USER'" @click="toggleMenu" to="/mine-aktiviteter" class="block hover:underline">Mine Aktiviteter</router-link>
 
-      <button v-if="userRole" @click="logout" class="block w-full text-left bg-red-500 hover:bg-red-700 px-3 py-1 rounded">
+     <button v-if="userRole" @click="logout" class="block w-full text-left bg-red-500 hover:bg-red-700 px-3 py-1 rounded">
         Logg ut
-      </button>
+      </button> 
     </div>
   </nav>
 </template>

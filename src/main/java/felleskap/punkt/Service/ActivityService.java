@@ -47,6 +47,25 @@ public class ActivityService {
                 .collect(Collectors.toList());
     }
 
+    public List<Activity> getMyActivities(String email) {
+        // First check if user is an ARANGOR organizer
+        Optional<Organizer> organizer = organizerRepository.findByEmail(email);
+        if (organizer.isPresent()) {
+            // Return activities organized by this organizer
+            return activityRepository.findAll().stream()
+                    .filter(a -> a.getOrganizer().getId().equals(organizer.get().getId()))
+                    .collect(Collectors.toList());
+        }
+
+        // Otherwise, get activities registered by this user
+        Optional<Users> user = usersRepository.findByEmail(email);
+        if (user.isPresent()) {
+            return user.get().getRegisteredActivities().stream().collect(Collectors.toList());
+        }
+
+        return List.of();
+    }
+
     public Activity createActivity(ActivityDto dto, String organizerEmail) {
         Organizer organizer = organizerRepository.findByEmail(organizerEmail)
                 .orElseThrow(() -> new RuntimeException("Arrangør ikke funnet"));
@@ -134,6 +153,22 @@ public class ActivityService {
         }
 
         activity.getRegisteredUsers().add(user);
+        activityRepository.save(activity);
+    }
+
+    // Ny metode for avmelding
+    public void unregisterForActivity(Long activityId, String userEmail) {
+        Activity activity = activityRepository.findById(activityId)
+                .orElseThrow(() -> new RuntimeException("Aktivitet ikke funnet"));
+
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Bruker ikke funnet"));
+
+        if (!activity.getRegisteredUsers().contains(user)) {
+            throw new RuntimeException("Bruker er ikke påmeldt denne aktiviteten");
+        }
+
+        activity.getRegisteredUsers().remove(user);
         activityRepository.save(activity);
     }
 }

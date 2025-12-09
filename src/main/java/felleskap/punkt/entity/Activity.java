@@ -1,5 +1,6 @@
 package felleskap.punkt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ public class Activity {
     @JoinColumn(name = "organizer_id", nullable = false)
     private Organizer organizer;
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
         name = "activity_registrations",

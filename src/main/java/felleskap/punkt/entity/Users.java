@@ -1,5 +1,6 @@
 package felleskap.punkt.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import felleskap.punkt.Domain.Role;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class Users {
     @JoinColumn(name = "address_id", nullable = false)
     private PostAddress address;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "registeredUsers")
     private Set<Activity> registeredActivities = new HashSet<>();
 

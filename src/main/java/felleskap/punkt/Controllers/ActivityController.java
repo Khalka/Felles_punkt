@@ -27,11 +27,12 @@ public class ActivityController {
         return ResponseEntity.ok(activities);
     }
 
-    // Hent alle aktiviteter til innlogget arrangør
     @GetMapping("/mine")
     public ResponseEntity<List<Activity>> getMyActivities(Authentication authentication) {
         String email = authentication.getName();
-        List<Activity> activities = activityService.getActivitiesByOrganizerEmail(email);
+        // For ARANGOR: get activities they organize
+        // For USER: get activities they are registered for
+        List<Activity> activities = activityService.getMyActivities(email);
         return ResponseEntity.ok(activities);
     }
 
@@ -67,5 +68,12 @@ public class ActivityController {
         String email = authentication.getName();
         activityService.registerForActivity(id, email);
         return ResponseEntity.ok(Map.of("message", "Påmelding vellykket"));
+    }
+
+    @DeleteMapping("/{id}/register")
+    public ResponseEntity<?> unregisterForActivity(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        activityService.unregisterForActivity(id, email);
+        return ResponseEntity.ok(Map.of("message", "Avmelding vellykket"));
     }
 }
