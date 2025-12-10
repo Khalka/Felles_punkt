@@ -115,18 +115,13 @@ async function meldPå(activityId) {
 
   try {
     await axios.post(`/api/activities/${activityId}/register`)
-    if (!registeredActivityIds.value.includes(activityId)) {
-      registeredActivityIds.value.push(activityId)
-    }
+    await fetchRegisteredActivities()
     alert('Du er påmeldt aktiviteten!')
   } catch (error) {
     console.error('Error registering for activity:', error)
     const errorMessage = error.response?.data?.message || error.message
     if (errorMessage.includes('allerede påmeldt') || errorMessage.includes('already')) {
-      if (!registeredActivityIds.value.includes(activityId)) {
-        registeredActivityIds.value.push(activityId)
-      }
-      // Don't show an error - treat as success since they're registered
+      await fetchRegisteredActivities()
       alert('Du er allerede påmeldt denne aktiviteten')
     } else if (errorMessage.includes('kolliderer')) {
       conflictMessage.value = errorMessage

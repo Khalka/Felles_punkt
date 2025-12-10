@@ -55,8 +55,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/activities/**").hasRole("ARANGOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/activities/**").hasRole("ARANGOR")
                 
-                // GET /api/activities/mine - only for ARANGOR
-                .requestMatchers(HttpMethod.GET, "/api/activities/mine").hasRole("ARANGOR")
+                // ARANGOR gets their organized activities, USER gets their registered activities
+                .requestMatchers(HttpMethod.GET, "/api/activities/mine").hasAnyRole("ARANGOR", "USER")
                 
                 // GET /api/activities - general endpoint for all authenticated users
                 .requestMatchers(HttpMethod.GET, "/api/activities").authenticated()

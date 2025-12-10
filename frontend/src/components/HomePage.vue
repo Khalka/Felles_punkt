@@ -111,6 +111,15 @@
             >
               Se detaljer
             </button>
+
+            <!-- Add comments section below activity details -->
+            <div class="border-t pt-3 mt-3">
+              <p class="text-xs text-gray-500 font-semibold mb-2">{{ activity.registeredUsers?.length || 0 }} pessoas inscritas</p>
+              <p v-if="activity.comments && activity.comments.length > 0" class="text-xs text-gray-600">
+                <strong>Último comentário:</strong> "{{ activity.comments[0].text.substring(0, 50) }}..."
+              </p>
+              <p v-else class="text-xs text-gray-600 italic">Sem comentários ainda</p>
+            </div>
           </div>
         </div>
       </div>
@@ -133,13 +142,8 @@ const fetchActivities = async () => {
   try {
     loading.value = true
     error.value = null
-    const response = await fetch('http://localhost:8080/api/activities')
-    
-    if (!response.ok) {
-      throw new Error('Kunne ikke laste aktiviteter')
-    }
-    
-    activities.value = await response.json()
+    const response = await api.get('/api/activities')
+    activities.value = response.data
   } catch (err) {
     console.error('Error fetching activities:', err)
     error.value = 'Kunne ikke laste aktiviteter. Prøv igjen senere.'
