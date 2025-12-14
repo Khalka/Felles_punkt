@@ -27,6 +27,12 @@ public class ActivityController {
         return ResponseEntity.ok(activities);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Activity> getActivityById(@PathVariable Long id) {
+        Activity activity = activityService.getActivityById(id);
+        return ResponseEntity.ok(activity);
+    }
+
     @GetMapping("/mine")
     public ResponseEntity<List<Activity>> getMyActivities(Authentication authentication) {
         String email = authentication.getName();
@@ -76,4 +82,7 @@ public class ActivityController {
         activityService.unregisterForActivity(id, email);
         return ResponseEntity.ok(Map.of("message", "Avmelding vellykket"));
     }
+
+
+
 }

@@ -30,7 +30,6 @@ public class Activity {
     @JoinColumn(name = "organizer_id", nullable = false)
     private Organizer organizer;
 
-    @JsonIgnore
     @ManyToMany
     @JoinTable(
         name = "activity_registrations",

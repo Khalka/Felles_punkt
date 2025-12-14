@@ -11,6 +11,7 @@ import DeltakerView from "./components/DeltakerView.vue"
 import MyActivities from "./components/MyActivities.vue"
 import ForgotPasswordPage from "./components/ForgotPasswordPage.vue"
 import ResetPasswordPage from "./components/ResetPasswordPage.vue"
+import ActivityDetail from "./components/ActivityDetail.vue"
 
 const routes = [
   { path: "/", component: HomePage },
@@ -18,6 +19,7 @@ const routes = [
   { path: "/register", component: RegisterView },
   { path: "/forgot-password", component: ForgotPasswordPage },
   { path: "/reset-password", component: ResetPasswordPage },
+  { path: "/activity/:id", component: ActivityDetail },
   {
     path: "/admin",
     component: AdminView,

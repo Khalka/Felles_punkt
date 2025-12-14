@@ -37,6 +37,11 @@ public class ActivityService {
         return activityRepository.findAll();
     }
 
+    public Activity getActivityById(Long id) {
+        return activityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Aktivitet ikke funnet"));
+    }
+
     public List<Activity> getActivitiesByOrganizerEmail(String email) {
         Optional<Organizer> organizer = organizerRepository.findByEmail(email);
         if (organizer.isEmpty()) {
@@ -171,4 +176,7 @@ public class ActivityService {
         activity.getRegisteredUsers().remove(user);
         activityRepository.save(activity);
     }
+
+   
+
 }

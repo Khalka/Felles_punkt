@@ -114,11 +114,12 @@
 
             <!-- Add comments section below activity details -->
             <div class="border-t pt-3 mt-3">
-              <p class="text-xs text-gray-500 font-semibold mb-2">{{ activity.registeredUsers?.length || 0 }} pessoas inscritas</p>
+              <!-- Fixed text to Norwegian and ensure participant count displays -->
+              <p class="text-xs text-gray-500 font-semibold mb-2">{{ activity.registeredUsers?.length || 0 }} påmeldte deltakere</p>
               <p v-if="activity.comments && activity.comments.length > 0" class="text-xs text-gray-600">
-                <strong>Último comentário:</strong> "{{ activity.comments[0].text.substring(0, 50) }}..."
+                <strong>Siste kommentar:</strong> "{{ activity.comments[0].text.substring(0, 50) }}..."
               </p>
-              <p v-else class="text-xs text-gray-600 italic">Sem comentários ainda</p>
+              <p v-else class="text-xs text-gray-600 italic">Ingen kommentarer ennå</p>
             </div>
           </div>
         </div>
@@ -153,19 +154,11 @@ const fetchActivities = async () => {
 }
 
 const handleActivityClick = (activity) => {
-  // Redirect to login if not authenticated
-  const token = localStorage.getItem('token')
-  if (!token) {
-    router.push('/login')
-  }
+  router.push(`/activity/${activity.activityId}`)
 }
 
 const handleRegister = (activity) => {
-  // Redirect to login to register for activity
-  const token = localStorage.getItem('token')
-  if (!token) {
-    router.push('/login')
-  }
+  router.push(`/activity/${activity.activityId}`)
 }
 
 const toggleFavorite = (activityId) => {
