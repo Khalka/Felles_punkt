@@ -2,6 +2,7 @@ package felleskap.punkt.Controllers;
 
 import felleskap.punkt.Service.CommentService;
 import felleskap.punkt.entity.Comment;
+import felleskap.punkt.security.jwt.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -14,6 +15,9 @@ public class CommentController {
 
     @Autowired
     private CommentService commentService;
+    
+    @Autowired
+    private JwtService jwtService;
 
     @GetMapping("/activity/{activityId}")
     public List<Comment> getCommentsByActivity(@PathVariable Long activityId) {
@@ -34,8 +38,10 @@ public class CommentController {
     }
 
     private String extractEmailFromToken(String authHeader) {
-        // This will be extracted from JWT token by the actual implementation
-        // For now, it's a placeholder
-        return authHeader;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtService.extractUsername(token);
+        }
+        return null;
     }
 }

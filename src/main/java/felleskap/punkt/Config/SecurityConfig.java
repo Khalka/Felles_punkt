@@ -64,6 +64,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/activities/*/register").hasRole("USER")
                 .requestMatchers(HttpMethod.DELETE, "/api/activities/*/register").hasRole("USER")
                 
+                // Comment endpoints - allow reading for all, posting for authenticated users
+                .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/comments/**").authenticated()
+                
                 // Require authentication for everything else
                 .anyRequest().authenticated()
             )
