@@ -21,6 +21,23 @@
         Logg inn
       </button>
     </form>
+
+    <!-- Demo credentials (visible when running against the built-in mock backend) -->
+    <div class="mt-6 border-t pt-4">
+      <p class="text-sm font-semibold text-gray-700 mb-2">Demo-innlogging</p>
+      <p class="text-xs text-gray-500 mb-2">Passord for alle: <code class="bg-gray-100 px-1 rounded">password</code></p>
+      <div class="flex flex-col gap-1">
+        <button type="button" @click="useDemo('admin@test.no')" class="text-left text-xs text-blue-600 hover:underline">
+          admin@test.no (Admin)
+        </button>
+        <button type="button" @click="useDemo('arrangor@test.no')" class="text-left text-xs text-blue-600 hover:underline">
+          arrangor@test.no (Arrangør)
+        </button>
+        <button type="button" @click="useDemo('deltaker@test.no')" class="text-left text-xs text-blue-600 hover:underline">
+          deltaker@test.no (Deltaker)
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -34,6 +51,11 @@ const email = ref('');
 const password = ref('');
 const router = useRouter();
 const auth = useAuth();
+
+function useDemo(demoEmail) {
+  email.value = demoEmail;
+  password.value = 'password';
+}
 
 async function login() {
   try {

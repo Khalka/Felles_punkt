@@ -1,6 +1,6 @@
 "use client"
 
-import { reactive, readonly } from "vue"
+import { reactive } from "vue"
 
 const state = reactive({
   user: null,
@@ -56,18 +56,39 @@ function isAuthenticated() {
   return !!state.token
 }
 
+// The previous implementation wrapped primitive values (strings/null) in
+// readonly(), which Vue warns about because readonly() only accepts objects.
+// Instead we expose plain getters that read straight from the reactive state:
+// consumers still get live values as primitives (so `auth.email.trim()` keeps
+// working) and reactivity is preserved when accessed inside templates or
+// computed properties. The returned object is frozen so consumers can't
+// overwrite the accessors.
+const auth = Object.freeze({
+  get user() {
+    return state.user
+  },
+  get role() {
+    return state.role
+  },
+  get token() {
+    return state.token
+  },
+  get firstName() {
+    return state.firstName
+  },
+  get lastName() {
+    return state.lastName
+  },
+  get email() {
+    return state.email
+  },
+  login,
+  logout,
+  getRole,
+  getFullName,
+  isAuthenticated,
+})
+
 export function useAuth() {
-  return {
-    user: readonly(state.user),
-    role: readonly(state.role),
-    token: readonly(state.token),
-    firstName: readonly(state.firstName),
-    lastName: readonly(state.lastName),
-    email: readonly(state.email),
-    login,
-    logout,
-    getRole,
-    getFullName,
-    isAuthenticated,
-  }
+  return auth
 }

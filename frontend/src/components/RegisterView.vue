@@ -144,7 +144,7 @@
 
 <script setup>
 import { reactive, ref } from "vue";
-import axios from "axios";
+import axios from "@/services/api";
 
 const form = reactive({
   firstName: "",
@@ -166,7 +166,7 @@ const message = ref("");
 
 async function registerUser() {
   try {
-    const response = await axios.post("http://localhost:9090/api/auth/register", form);
+    const response = await axios.post("/api/auth/register", form);
     message.value = response.data.message || "Registrering vellykket!";
   } catch (error) {
     message.value = error.response?.data?.message || "Noe gikk galt under registrering.";
